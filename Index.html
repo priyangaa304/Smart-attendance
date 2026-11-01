@@ -2,70 +2,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Student Registration</title>
+<title>Student QR Generation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 body {
-  font-family: Arial;
-  background: #eaf0ff;
-  text-align: center;
-  padding: 20px;
+ font-family: Arial;
+ background: #eaf0ff;
+ text-align: center;
+ padding: 20px;
 }
 .container {
-  background: white;
-  padding: 25px;
-  margin: 30px auto;
-  max-width: 350px;
-  border-radius: 15px;
+ background: white;
+ padding: 25px;
+ margin: 30px auto;
+ max-width: 350px;
+ border-radius: 15px;
 }
-input, select, button {
-  width: 90%;
-  padding: 12px;
-  margin: 10px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
+input, button {
+ width: 90%;
+ padding: 12px;
+ margin: 10px;
+ border-radius: 7px;
+ border: 1px solid #ccc;
 }
 button {
-  background: #304ffe;
-  color: white;
-  border: none;
+ background: #304ffe;
+ color: white;
+ border: none;
+}
+#qrcode {
+ display: flex;
+ justify-content: center;
+ margin: 20px;
 }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>Student Registration</h2>
+<h2>Smart Attendance System</h2>
+<h3>Generate Student QR Code</h3>
 
 <input id="name" placeholder="Student Name">
 <input id="reg" placeholder="Register Number">
 
-<select id="dept">
-<option value="">Select Department</option>
-<option>MCA</option>
-<option>MBA</option>
-<option>M.Sc</option>
-<option>BCA</option>
-</select>
+<button onclick="generateQR()">Generate QR Code</button>
 
-<input id="year" placeholder="Year">
-
-<button onclick="register()">Register</button>
-<p id="msg"></p>
+<div id="qrcode"></div>
+<p id="result"></p>
 </div>
 
 <script>
-function register() {
-let name = document.getElementById("name").value;
-let reg = document.getElementById("reg").value;
-let dept = document.getElementById("dept").value;
+function generateQR() {
+ let name = document.getElementById("name").value;
+ let reg = document.getElementById("reg").value;
 
-if(name && reg && dept) {
-document.getElementById("msg").innerHTML =
-"Registration Successful!";
-} else {
-document.getElementById("msg").innerHTML =
-"Please fill all details!";
-}
+ if(name === "" || reg === "") {
+ alert("Enter student details");
+ return;
+ }
+
+ document.getElementById("qrcode").innerHTML = "";
+
+ new QRCode(document.getElementById("qrcode"), {
+ text: JSON.stringify({
+ name: name,
+ registerNumber: reg
+ }),
+ width: 200,
+ height: 200
+ });
+
+ document.getElementById("result").innerHTML =
+ "QR Code Generated Successfully!";
 }
 </script>
 </body>
