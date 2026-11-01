@@ -2,80 +2,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Student QR Generation</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>Smart Attendance System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
- font-family: Arial;
- background: #eaf0ff;
- text-align: center;
- padding: 20px;
+  font-family: Arial;
+  background: #eaf0ff;
+  text-align: center;
+  padding: 30px;
 }
 .container {
- background: white;
- padding: 25px;
- margin: 30px auto;
- max-width: 350px;
- border-radius: 15px;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 350px;
+  margin: 50px auto;
 }
 input, button {
- width: 90%;
- padding: 12px;
- margin: 10px;
- border-radius: 7px;
- border: 1px solid #ccc;
+  width: 90%;
+  padding: 12px;
+  margin: 10px;
+  border-radius: 8px;
 }
 button {
- background: #304ffe;
- color: white;
- border: none;
-}
-#qrcode {
- display: flex;
- justify-content: center;
- margin: 20px;
+  background: #315bea;
+  color: white;
+  border: none;
 }
 </style>
 </head>
 <body>
+
 <div class="container">
 <h2>Smart Attendance System</h2>
-<h3>Generate Student QR Code</h3>
+<h3>Teacher Login</h3>
 
-<input id="name" placeholder="Student Name">
-<input id="reg" placeholder="Register Number">
+<input type="text" id="username" placeholder="Teacher Name">
 
-<button onclick="generateQR()">Generate QR Code</button>
+<input type="password" id="password" placeholder="Password">
 
-<div id="qrcode"></div>
-<p id="result"></p>
+<button onclick="login()">Login</button>
+
+<p id="message"></p>
 </div>
 
 <script>
-function generateQR() {
- let name = document.getElementById("name").value;
- let reg = document.getElementById("reg").value;
+function login() {
+ let user = document.getElementById("username").value;
+ let pass = document.getElementById("password").value;
 
- if(name === "" || reg === "") {
- alert("Enter student details");
- return;
+ if(user === "teacher" && pass === "1234") {
+   document.getElementById("message").innerHTML =
+   "Login Successful!";
+ } else {
+   document.getElementById("message").innerHTML =
+   "Invalid Username or Password";
  }
-
- document.getElementById("qrcode").innerHTML = "";
-
- new QRCode(document.getElementById("qrcode"), {
- text: JSON.stringify({
- name: name,
- registerNumber: reg
- }),
- width: 200,
- height: 200
- });
-
- document.getElementById("result").innerHTML =
- "QR Code Generated Successfully!";
 }
 </script>
+
 </body>
 </html>
