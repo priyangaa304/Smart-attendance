@@ -2,327 +2,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Smart Attendance</title>
+<title>Smart Attendance System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
   font-family: Arial;
-  background: #eef2ff;
-  margin: 0;
-  padding: 15px;
-}
-header {
-  background: #243b80;
-  color: white;
+  background: #eaf0ff;
   text-align: center;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 30px;
 }
-.box {
+.container {
   background: white;
-  padding: 18px;
-  margin-top: 15px;
-  border-radius: 12px;
+  padding: 25px;
+  margin: 50px auto;
+  max-width: 350px;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px #aaa;
 }
 input, button {
-  width: 100%;
+  width: 90%;
   padding: 12px;
-  margin: 8px 0;
-  box-sizing: border-box;
+  margin: 10px;
   border-radius: 7px;
-}
-input {
-  border: 1px solid #aaa;
+  border: 1px solid #ccc;
 }
 button {
-  background: #243b80;
+  background: #304ffe;
   color: white;
   border: none;
-  font-size: 16px;
 }
-h2 { color: #243b80; }
-#result {
-  text-align: center;
-  margin: 15px;
-}
-.student {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
+h2 { color: #304ffe; }
 </style>
 </head>
-
 <body>
-
-<header>
-<h2 style="color:white">SMART ATTENDANCE</h2>
-<p>QR Code Based Attendance System</p>
-</header>
-
-<div class="box" id="login">
-<h2>Teacher Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password"
-placeholder="Password">
+<div class="container">
+<h2>Smart Attendance System</h2>
+<h3>Teacher Login</h3>
+<input type="text" placeholder="Teacher Username">
+<input type="password" placeholder="Password">
 <button onclick="login()">Login</button>
 <p id="message"></p>
 </div>
-
-<div id="dashboard" style="display:none">
-
-<div class="box">
-<h2>Dashboard</h2>
-<button onclick="show('students')">
-Student Registration
-</button>
-<button onclick="show('qr')">
-Generate QR Code
-</button>
-<button onclick="show('scan')">
-Scan QR Code
-</button>
-<button onclick="show('attendance')">
-Attendance Report
-</button>
-<button onclick="logout()">Logout</button>
-</div>
-
-<div class="box" id="students" style="display:none">
-<h2>Student Registration</h2>
-<input id="sname" placeholder="Student Name">
-<input id="roll" placeholder="Roll Number">
-<input id="dept" placeholder="Department">
-<button onclick="addStudent()">Add Student</button>
-<div id="studentList"></div>
-</div>
-
-<div class="box" id="qr" style="display:none">
-<h2>Generate QR Code</h2>
-<input id="qrroll" placeholder="Enter Roll Number">
-<button onclick="generateQR()">Generate</button>
-<div id="result"></div>
-</div>
-
-<div class="box" id="scan" style="display:none">
-<h2>Scan Student QR</h2>
-<div id="reader"></div>
-<p id="scanMessage"></p>
-</div>
-
-<div class="box" id="attendance" style="display:none">
-<h2>Attendance Report</h2>
-<div id="attendanceList"></div>
-</div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-
 <script>
-
-let students = JSON.parse(
-localStorage.getItem("students") || "[]"
-);
-
-let records = JSON.parse(
-localStorage.getItem("records") || "[]"
-);
-
-let scanner = null;
-
 function login() {
-let u = document.getElementById("username").value;
-let p = document.getElementById("password").value;
-
-if(u === "admin" && p === "1234") {
-document.getElementById("login").style.display="none";
-document.getElementById("dashboard").style.display="block";
-} else {
-document.getElementById("message").innerText =
-"Invalid Login Details";
+ document.getElementById("message").innerHTML =
+ "Welcome Teacher!";
 }
-}
-
-function logout() {
-stopScanner();
-document.getElementById("dashboard").style.display="none";
-document.getElementById("login").style.display="block";
-}
-
-function show(id) {
-stopScanner();
-
-["students","qr","scan","attendance"].forEach(x => {
-document.getElementById(x).style.display="none";
-});
-
-document.getElementById(id).style.display="block";
-
-if(id==="students") displayStudents();
-if(id==="attendance") displayAttendance();
-if(id==="scan") startScanner();
-}
-
-function addStudent() {
-let name=document.getElementById("sname").value.trim();
-let roll=document.getElementById("roll").value.trim();
-let dept=document.getElementById("dept").value.trim();
-
-if(!name || !roll || !dept) {
-alert("Fill all details");
-return;
-}
-
-if(students.some(s=>s.roll===roll)) {
-alert("Roll number already exists");
-return;
-}
-
-students.push({name,roll,dept});
-
-localStorage.setItem("students",JSON.stringify(students));
-
-alert("Student Added Successfully");
-
-document.getElementById("sname").value="";
-document.getElementById("roll").value="";
-document.getElementById("dept").value="";
-
-displayStudents();
-}
-
-function displayStudents() {
-let html="";
-
-students.forEach(s=>{
-html+=`<div class="student">
-<b>${escapeHTML(s.name)}</b><br>
-${escapeHTML(s.roll)} - ${escapeHTML(s.dept)}
-</div>`;
-});
-
-document.getElementById("studentList").innerHTML=html;
-}
-
-function generateQR() {
-let roll=document.getElementById("qrroll").value.trim();
-
-let student=students.find(s=>s.roll===roll);
-
-if(!student) {
-alert("Student not found. Register first.");
-return;
-}
-
-let result=document.getElementById("result");
-result.innerHTML="";
-
-let data=JSON.stringify({
-roll:student.roll
-});
-
-new QRCode(result,{
-text:data,
-width:200,
-height:200
-});
-
-}
-
-function startScanner() {
-if(typeof Html5Qrcode === "undefined") {
-document.getElementById("scanMessage").innerText =
-"Scanner library not loaded. Check internet.";
-return;
-}
-
-scanner=new Html5Qrcode("reader");
-
-scanner.start(
-{facingMode:"environment"},
-{fps:10,qrbox:220},
-(decodedText)=>{
-try {
-let data=JSON.parse(decodedText);
-markAttendance(data.roll);
-} catch(e) {
-document.getElementById("scanMessage").innerText =
-"Invalid QR Code";
-}
-},
-()=>{}
-).catch(err=>{
-document.getElementById("scanMessage").innerText =
-"Camera permission or HTTPS required.";
-});
-}
-
-function stopScanner() {
-if(scanner) {
-let s=scanner;
-scanner=null;
-s.stop().then(()=>s.clear()).catch(()=>{});
-}
-}
-
-function markAttendance(roll) {
-let student=students.find(s=>s.roll===roll);
-
-if(!student) {
-document.getElementById("scanMessage").innerText =
-"Student not registered";
-return;
-}
-
-let today=new Date().toLocaleDateString();
-
-let exists=records.some(r=>
-r.roll===roll && r.date===today
-);
-
-if(exists) {
-document.getElementById("scanMessage").innerText =
-"Already marked present!";
-return;
-}
-
-records.push({
-name:student.name,
-roll:student.roll,
-date:today,
-status:"Present"
-});
-
-localStorage.setItem("records",JSON.stringify(records));
-
-document.getElementById("scanMessage").innerText =
-student.name+" - Attendance Marked!";
-}
-
-function displayAttendance() {
-let html="";
-
-records.forEach(r=>{
-html+=`<div class="student">
-<b>${escapeHTML(r.name)}</b><br>
-${escapeHTML(r.roll)} | ${escapeHTML(r.date)}
-| ${r.status}
-</div>`;
-});
-
-document.getElementById("attendanceList").innerHTML =
-html || "No attendance records";
-}
-
-function escapeHTML(value) {
-return String(value).replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#39;"
-}[c]));
-}
-
 </script>
 </body>
 </html>
