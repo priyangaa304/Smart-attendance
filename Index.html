@@ -2,51 +2,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Smart Attendance System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
   font-family: Arial;
   background: #eaf0ff;
   text-align: center;
-  padding: 30px;
+  padding: 20px;
 }
 .container {
   background: white;
   padding: 25px;
-  margin: 50px auto;
+  margin: 30px auto;
   max-width: 350px;
   border-radius: 15px;
-  box-shadow: 0 3px 12px #aaa;
 }
-input, button {
+input, select, button {
   width: 90%;
   padding: 12px;
   margin: 10px;
-  border-radius: 7px;
   border: 1px solid #ccc;
+  border-radius: 7px;
 }
 button {
   background: #304ffe;
   color: white;
   border: none;
 }
-h2 { color: #304ffe; }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>Smart Attendance System</h2>
-<h3>Teacher Login</h3>
-<input type="text" placeholder="Teacher Username">
-<input type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p id="message"></p>
+<h2>Student Registration</h2>
+
+<input id="name" placeholder="Student Name">
+<input id="reg" placeholder="Register Number">
+
+<select id="dept">
+<option value="">Select Department</option>
+<option>MCA</option>
+<option>MBA</option>
+<option>M.Sc</option>
+<option>BCA</option>
+</select>
+
+<input id="year" placeholder="Year">
+
+<button onclick="register()">Register</button>
+<p id="msg"></p>
 </div>
+
 <script>
-function login() {
- document.getElementById("message").innerHTML =
- "Welcome Teacher!";
+function register() {
+let name = document.getElementById("name").value;
+let reg = document.getElementById("reg").value;
+let dept = document.getElementById("dept").value;
+
+if(name && reg && dept) {
+document.getElementById("msg").innerHTML =
+"Registration Successful!";
+} else {
+document.getElementById("msg").innerHTML =
+"Please fill all details!";
+}
 }
 </script>
 </body>
