@@ -1,0 +1,465 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Attendance System</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:#f1f5f9;color:#172554;
+}
+header{
+ background:#142d5c;color:white;padding:20px;
+ text-align:center;
+}
+header h1{margin:0;font-size:25px}
+header p{margin:7px 0 0;color:#dbeafe}
+.container{max-width:1100px;margin:auto;padding:18px}
+.card{
+ background:white;padding:20px;margin:15px 0;
+ border-radius:13px;
+ box-shadow:0 3px 12px #0001;
+}
+input,select{
+ width:100%;padding:12px;margin:7px 0;
+ border:1px solid #cbd5e1;border-radius:7px;
+ font-size:15px;
+}
+button{
+ padding:11px 16px;border:0;border-radius:7px;
+ background:#2563eb;color:white;
+ cursor:pointer;margin:5px;
+}
+button:hover{opacity:.85}
+.danger{background:#dc2626}
+.green{background:#15803d}
+.hidden{display:none}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+ gap:12px;
+}
+.stat{
+ background:#eaf2ff;padding:18px;
+ border-radius:10px;text-align:center;
+}
+.stat h2{margin:5px;color:#1d4ed8}
+table{width:100%;border-collapse:collapse}
+th,td{
+ padding:11px;border-bottom:1px solid #ddd;
+ text-align:left;
+}
+th{background:#eaf2ff}
+.table-wrap{overflow-x:auto}
+nav{display:flex;flex-wrap:wrap;gap:5px}
+#qrcode{margin:15px auto;width:max-content}
+#reader{max-width:400px;margin:auto}
+footer{text-align:center;padding:20px;color:#64748b}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🎓 SMART ATTENDANCE SYSTEM</h1>
+<p>QR Code Based Student Attendance Management</p>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login" class="card">
+<h2>🔐 Teacher Login</h2>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginMsg"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+
+<div class="card">
+<h2>Welcome, Teacher 👋</h2>
+<nav>
+<button onclick="show('home')">Dashboard</button>
+<button onclick="show('students')">Students</button>
+<button onclick="show('attendance')">Attendance</button>
+<button onclick="show('scanner')">QR Scanner</button>
+<button onclick="show('reports')">Reports</button>
+<button class="danger" onclick="logout()">Logout</button>
+</nav>
+</div>
+
+<!-- HOME -->
+<section id="home" class="page">
+<div class="card">
+<h2>📊 Dashboard Overview</h2>
+<div class="grid">
+<div class="stat">
+<h2 id="total">0</h2>
+Total Students
+</div>
+<div class="stat">
+<h2 id="present">0</h2>
+Present Today
+</div>
+<div class="stat">
+<h2 id="absent">0</h2>
+Absent Today
+</div>
+<div class="stat">
+<h2 id="percentage">0%</h2>
+Attendance %
+</div>
+</div>
+</div>
+</section>
+
+<!-- STUDENTS -->
+<section id="students" class="page hidden">
+<div class="card">
+<h2>🎓 Add New Student</h2>
+
+<input id="studentName" placeholder="Student Name">
+<input id="studentReg" placeholder="Register Number">
+<input id="studentDept" placeholder="Department">
+<input id="studentYear" placeholder="Year">
+
+<button onclick="addStudent()">Add Student</button>
+<p id="studentMsg"></p>
+</div>
+
+<div class="card">
+<h2>Student Database</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Register No</th>
+<th>Department</th>
+<th>Year</th>
+<th>QR</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="studentList"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- ATTENDANCE -->
+<section id="attendance" class="page hidden">
+<div class="card">
+<h2>📋 Today's Attendance</h2>
+<p id="today"></p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Register No</th>
+<th>Name</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="attendanceList"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- SCANNER -->
+<section id="scanner" class="page hidden">
+<div class="card">
+<h2>📷 QR Code Scanner</h2>
+<p>Scan student QR code to mark attendance.</p>
+<div id="reader"></div>
+<p id="scanMsg"></p>
+<button onclick="startScanner()">Start Camera</button>
+<button class="danger" onclick="stopScanner()">Stop Camera</button>
+</div>
+</section>
+
+<!-- REPORTS -->
+<section id="reports" class="page hidden">
+<div class="card">
+<h2>📈 Attendance Report</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Register No</th>
+<th>Present</th>
+<th>Absent</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody id="reportList"></tbody>
+</table>
+</div>
+<button onclick="window.print()">Print Report</button>
+</div>
+</section>
+
+</div>
+</div>
+
+<div id="qrModal" class="hidden card" style="text-align:center;max-width:400px;margin:20px auto">
+<h2>Student QR Code</h2>
+<div id="qrcode"></div>
+<p id="qrName"></p>
+<button onclick="window.print()">Print QR</button>
+<button onclick="closeQR()" class="danger">Close</button>
+</div>
+
+<footer>© 2026 Smart Attendance System</footer>
+
+<script>
+
+let students=JSON.parse(localStorage.getItem("students")||"[]");
+let records=JSON.parse(localStorage.getItem("records")||"{}");
+let scanner=null;
+
+function save(){
+ localStorage.setItem("students",JSON.stringify(students));
+ localStorage.setItem("records",JSON.stringify(records));
+}
+
+function login(){
+ let u=document.getElementById("username").value;
+ let p=document.getElementById("password").value;
+
+ if(u==="admin" && p==="1234"){
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+ refresh();
+ }else{
+ document.getElementById("loginMsg").innerText="Invalid Username or Password!";
+ }
+}
+
+function logout(){
+ stopScanner();
+ document.getElementById("dashboard").classList.add("hidden");
+ document.getElementById("login").classList.remove("hidden");
+}
+
+function show(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ if(id==="scanner") stopScanner();
+ if(id!=="scanner") stopScanner();
+ refresh();
+}
+
+function dateKey(){
+ return new Date().toLocaleDateString("en-CA");
+}
+
+function addStudent(){
+ let name=document.getElementById("studentName").value.trim();
+ let reg=document.getElementById("studentReg").value.trim();
+ let dept=document.getElementById("studentDept").value.trim();
+ let year=document.getElementById("studentYear").value.trim();
+
+ if(!name||!reg||!dept||!year){
+ alert("Please fill all fields");
+ return;
+ }
+
+ if(students.some(s=>s.reg.toLowerCase()===reg.toLowerCase())){
+ alert("Register number already exists!");
+ return;
+ }
+
+ students.push({name,reg,dept,year});
+ save();
+
+ document.getElementById("studentName").value="";
+ document.getElementById("studentReg").value="";
+ document.getElementById("studentDept").value="";
+ document.getElementById("studentYear").value="";
+
+ document.getElementById("studentMsg").innerText="Student added successfully!";
+ refresh();
+}
+
+function removeStudent(reg){
+ if(!confirm("Delete this student?"))return;
+ students=students.filter(s=>s.reg!==reg);
+ save();
+ refresh();
+}
+
+function generateQR(reg){
+ let s=students.find(x=>x.reg===reg);
+ if(!s)return;
+
+ stopScanner();
+ document.getElementById("dashboard").classList.add("hidden");
+ let modal=document.getElementById("qrModal");
+ modal.classList.remove("hidden");
+
+ document.getElementById("qrcode").innerHTML="";
+ document.getElementById("qrName").innerText=s.name+" - "+s.reg;
+
+ new QRCode(document.getElementById("qrcode"),{
+ text:s.reg,width:180,height:180
+ });
+}
+
+function closeQR(){
+ document.getElementById("qrModal").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+ refresh();
+}
+
+function markAttendance(reg){
+ if(!students.some(s=>s.reg===reg)){
+ alert("Student not found!");
+ return;
+ }
+
+ let date=dateKey();
+
+ if(!records[date])records[date]={};
+
+ if(records[date][reg]){
+ document.getElementById("scanMsg").innerText="Already marked Present!";
+ return;
+ }
+
+ records[date][reg]="Present";
+ save();
+ document.getElementById("scanMsg").innerText="Attendance marked successfully!";
+ refresh();
+}
+
+function attendanceStatus(reg){
+ return records[dateKey()]?.[reg]||"Absent";
+}
+
+function startScanner(){
+ if(!window.Html5Qrcode){
+ alert("Scanner library not loaded. Check internet.");
+ return;
+ }
+
+ if(scanner)return;
+
+ scanner=new Html5Qrcode("reader");
+
+ scanner.start(
+ {facingMode:"environment"},
+ {fps:10,qrbox:{width:220,height:220}},
+ text=>{
+ stopScanner();
+ markAttendance(text.trim());
+ },
+ error=>{}
+ ).catch(err=>{
+ scanner=null;
+ alert("Camera error: "+err);
+ });
+}
+
+function stopScanner(){
+ if(scanner){
+ let current=scanner;
+ scanner=null;
+ current.stop().then(()=>current.clear()).catch(()=>{});
+ }
+}
+
+function refresh(){
+
+ let today=dateKey();
+ let presentCount=Object.values(records[today]||{}).filter(x=>x==="Present").length;
+ let total=students.length;
+ let absentCount=total-presentCount;
+
+ document.getElementById("total").innerText=total;
+ document.getElementById("present").innerText=presentCount;
+ document.getElementById("absent").innerText=absentCount;
+ document.getElementById("percentage").innerText=
+ total?Math.round(presentCount/total*100)+"%":"0%";
+
+ document.getElementById("today").innerText="Date: "+today;
+
+ document.getElementById("studentList").innerHTML=
+ students.map(s=>`
+ <tr>
+ <td>${escapeHTML(s.name)}</td>
+ <td>${escapeHTML(s.reg)}</td>
+ <td>${escapeHTML(s.dept)}</td>
+ <td>${escapeHTML(s.year)}</td>
+ <td><button onclick="generateQR('${encodeURIComponent(s.reg)}'.replaceAll('%','%'))">Generate</button></td>
+ <td><button class="danger" onclick="removeStudent('${encodeURIComponent(s.reg)}'.replaceAll('%','%'))">Delete</button></td>
+ </tr>`).join("");
+
+ // Rebuild student table using safe register-number handlers
+ document.querySelectorAll("#studentList button").forEach((btn,i)=>{
+   let s=students[Math.floor(i/2)];
+   if(!s)return;
+   if(i%2===0)btn.onclick=()=>generateQR(s.reg);
+   else btn.onclick=()=>removeStudent(s.reg);
+ });
+
+ document.getElementById("attendanceList").innerHTML=
+ students.map(s=>`
+ <tr>
+ <td>${escapeHTML(s.reg)}</td>
+ <td>${escapeHTML(s.name)}</td>
+ <td>${attendanceStatus(s.reg)}</td>
+ <td>${attendanceStatus(s.reg)==="Absent"?
+ `<button class="green" onclick="markAttendance('${encodeURIComponent(s.reg)}')">Mark Present</button>`:
+ "✓ Present"}</td>
+ </tr>`).join("");
+
+ document.querySelectorAll("#attendanceList button").forEach((btn,i)=>{
+ btn.onclick=()=>markAttendance(students[i].reg);
+ });
+
+ document.getElementById("reportList").innerHTML=
+ students.map(s=>{
+ let presentDays=0,absentDays=0;
+ Object.values(records).forEach(day=>{
+ if(day[s.reg]==="Present")presentDays++;
+ });
+ absentDays=Math.max(0,Object.keys(records).length-presentDays);
+ let percent=Object.keys(records).length?
+ Math.round(presentDays/Object.keys(records).length*100):0;
+
+ return `<tr>
+ <td>${escapeHTML(s.name)}</td>
+ <td>${escapeHTML(s.reg)}</td>
+ <td>${presentDays}</td>
+ <td>${absentDays}</td>
+ <td>${percent}%</td>
+ </tr>`;
+ }).join("");
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",
+ '"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+refresh();
+
+</script>
+</body>
+</html>
